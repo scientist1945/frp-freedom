@@ -1,0 +1,38 @@
+name: Build Windows EXE
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch: # Permite compilar manualmente desde la web
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout del repositorio
+      uses: actions/checkout@v4
+
+    - name: Configurar Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Instalar dependencias
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pyinstaller
+
+    - name: Compilar ejecutable
+      # Asegúrate de que "main.py" es el archivo principal de arranque del repositorio
+      run: |
+        pyinstaller --onefile --noconsole main.py
+
+    - name: Subir el .exe como artefacto
+      uses: actions/upload-artifact@v4
+      with:
+        name: frp-freedom-windows-exe
+        path: dist/*.exe
